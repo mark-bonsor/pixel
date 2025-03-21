@@ -10,13 +10,13 @@ import UIKit
 struct UserTableViewCellViewModel {
     let name: String
     let reputation: Int
-    var image: UIImage?
+    var imageUrl: String?
     var isCurrentlyFollowing: Bool
     
     init(with model: User) {
         name = model.display_name
         reputation = model.reputation
-        image = UIImage(systemName: "person")
+        imageUrl = model.profile_image
         isCurrentlyFollowing = false
     }
     

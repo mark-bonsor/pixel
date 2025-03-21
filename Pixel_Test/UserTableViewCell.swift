@@ -28,6 +28,13 @@ class UserTableViewCell: UITableViewCell {
         return imageView
     }()
     
+    private let placeholderImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .black
@@ -47,6 +54,7 @@ class UserTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        contentView.addSubview(placeholderImageView)
         contentView.addSubview(userImageView)
         contentView.addSubview(nameLabel)
         contentView.addSubview(reputationLabel)
@@ -75,7 +83,8 @@ class UserTableViewCell: UITableViewCell {
         self.viewModel = viewModel
         nameLabel.text = viewModel.name
         reputationLabel.text =  "Reputation: \(viewModel.reputation)"
-        userImageView.image = viewModel.image
+        placeholderImageView.image = UIImage(systemName: "person")
+        userImageView.downloaded(from: viewModel.imageUrl!)
         
         if viewModel.isCurrentlyFollowing {
             button.setTitle("Unfollow", for: .normal)
@@ -101,6 +110,8 @@ class UserTableViewCell: UITableViewCell {
         userImageView.frame = CGRect(x: 5, y: 5,
                                      width: imageWidth, height: imageWidth)
         
+        placeholderImageView.frame = userImageView.frame
+        
         nameLabel.font = .systemFont(ofSize: 20, weight: .bold)
         nameLabel.frame = CGRect(x: imageWidth+10, y: 5,
                                  width: labelWidth, height: labelHeight)
@@ -124,4 +135,28 @@ class UserTableViewCell: UITableViewCell {
         button.setTitle(nil, for: .normal)
     }
 
+}
+
+extension UIImageView {
+    
+    func downloaded(from url: URL, contentMode mode: ContentMode = .scaleAspectFit) {
+        contentMode = mode
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard
+                let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200,
+                let mimeType = response?.mimeType, mimeType.hasPrefix("image"),
+                let data = data, error == nil,
+                let image = UIImage(data: data)
+                else { return }
+            DispatchQueue.main.async() { [weak self] in
+                self?.image = image
+            }
+        }.resume()
+    }
+    
+    func downloaded(from link: String, contentMode mode: ContentMode = .scaleAspectFit) {
+        guard let url = URL(string: link) else { return }
+        downloaded(from: url, contentMode: mode)
+    }
+    
 }
