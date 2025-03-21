@@ -55,11 +55,16 @@ class ViewController: UIViewController, UITableViewDataSource {
         ) as? UserTableViewCell else {
             return UITableViewCell()
         }
-        // cell.textLabel?.text = user.display_name
         cell.configure(with: UserTableViewCellViewModel(with: model))
+        cell.delegate = self
         return cell
     }
 
-
 }
 
+extension ViewController: UserTableViewCellDelegate {
+    func userTableViewCell(_ cell: UserTableViewCell, didTapWith viewModel: UserTableViewCellViewModel) {
+        
+        // TODO: Save into data source [User]
+    }
+}

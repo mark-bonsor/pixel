@@ -7,8 +7,17 @@
 
 import UIKit
 
+protocol UserTableViewCellDelegate: AnyObject {
+    func userTableViewCell(
+        _ cell: UserTableViewCell,
+        didTapWith viewModel: UserTableViewCellViewModel
+    )
+}
+
 class UserTableViewCell: UITableViewCell {
     static let identifier = "UserTableViewCell"
+    
+    weak var delegate: UserTableViewCellDelegate?
     
     private var viewModel: UserTableViewCellViewModel?
     
@@ -43,10 +52,23 @@ class UserTableViewCell: UITableViewCell {
         contentView.addSubview(reputationLabel)
         contentView.addSubview(button)
         contentView.clipsToBounds = true
+        button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
     }
     
     required init?(coder: NSCoder) {
         fatalError()
+    }
+    
+    @objc private func didTapButton() {
+        guard let viewModel = viewModel else {return}
+        
+        var newViewModel = viewModel
+        newViewModel.isCurrentlyFollowing = !viewModel.isCurrentlyFollowing
+        
+        delegate?.userTableViewCell(self, didTapWith: newViewModel)
+        
+        prepareForReuse()
+        configure(with: newViewModel)
     }
     
     func configure(with viewModel: UserTableViewCellViewModel) {
@@ -93,6 +115,13 @@ class UserTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        
+        nameLabel.text = nil
+        reputationLabel.text = nil
+        userImageView.image = nil
+        button.backgroundColor = nil
+        button.layer.borderWidth = 0
+        button.setTitle(nil, for: .normal)
     }
 
 }
