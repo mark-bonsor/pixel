@@ -32,6 +32,7 @@ class UserTableViewCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(systemName: "person")?.withTintColor(.lightGray, renderingMode: .alwaysOriginal)
         return imageView
     }()
     
@@ -51,6 +52,14 @@ class UserTableViewCell: UITableViewCell {
         let button = UIButton()
         return button
     }()
+    
+    private let followedBadgeView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage.checkmark
+        return imageView
+    }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -59,6 +68,7 @@ class UserTableViewCell: UITableViewCell {
         contentView.addSubview(nameLabel)
         contentView.addSubview(reputationLabel)
         contentView.addSubview(button)
+        contentView.addSubview(followedBadgeView)
         contentView.clipsToBounds = true
         button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
     }
@@ -83,7 +93,6 @@ class UserTableViewCell: UITableViewCell {
         self.viewModel = viewModel
         nameLabel.text = viewModel.name
         reputationLabel.text =  "Reputation: \(viewModel.reputation)"
-        placeholderImageView.image = UIImage(systemName: "person")
         userImageView.downloaded(from: viewModel.imageUrl!)
         
         if viewModel.isCurrentlyFollowing {
@@ -97,6 +106,8 @@ class UserTableViewCell: UITableViewCell {
             button.backgroundColor = .link
         }
         
+        followedBadgeView.isHidden = !viewModel.isCurrentlyFollowing
+        
     }
     
     override func layoutSubviews() {
@@ -106,6 +117,7 @@ class UserTableViewCell: UITableViewCell {
         let labelHeight = CGFloat(30)
         let buttonHeight = CGFloat(30)
         let buttonWidth = CGFloat(100)
+        let badgeWidth = CGFloat(20)
         
         userImageView.frame = CGRect(x: 5, y: 5,
                                      width: imageWidth, height: imageWidth)
@@ -122,6 +134,10 @@ class UserTableViewCell: UITableViewCell {
         button.frame = CGRect(x: contentView.frame.size.width-buttonWidth-15,
                               y: contentView.frame.size.height-buttonHeight-10,
                               width: buttonWidth, height: buttonHeight)
+        
+        followedBadgeView.frame = CGRect(x: userImageView.frame.minX + 2,
+                                         y: userImageView.frame.maxY - badgeWidth - 2,
+                                         width: badgeWidth, height: badgeWidth)
     }
     
     override func prepareForReuse() {
