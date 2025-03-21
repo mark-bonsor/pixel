@@ -7,6 +7,10 @@
 
 import Foundation
 
+struct UserItems: Codable {
+    let items: [User]
+}
+
 struct User: Codable {
     let display_name: String
     let reputation: Int
