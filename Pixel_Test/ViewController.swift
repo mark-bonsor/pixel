@@ -9,6 +9,8 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDataSource {
     
+    let defaults = UserDefaults.standard
+    
     private var users = [User]()
     
     private let tableView: UITableView = {
@@ -50,7 +52,7 @@ class ViewController: UIViewController, UITableViewDataSource {
             let name = names[i]
             let reputation = reputations[i]
             let image = images[i]
-            users.append(User(display_name: name, reputation: reputation, profile_image: image))
+            users.append(User(display_name: name, reputation: reputation, profile_image: image, isFollowing: false))
         }
     }
     
@@ -101,18 +103,55 @@ class ViewController: UIViewController, UITableViewDataSource {
         }
         task.resume()
     }
+    
     func setUserData(userArray: [User]) {
         
-        users = userArray
-        print(users)
+        users = loadFollowStates(userArray)
         self.tableView.reloadData()
+    }
+    
+    func saveFollowStates() {
+        var followingDict: [String: Bool] = [:]
+        for user in users {
+            followingDict[user.display_name] = user.isFollowing!
+        }
+        defaults.set(followingDict, forKey: "followingStates")
+    }
+    
+    func loadFollowStates(_ userArray: [User])->[User] {
+        var outputUserArray: [User] = []
+        
+        if let followingDict = defaults.dictionary(forKey: "followingStates") {
+            for var user in userArray {
+                if let savedFollowState = followingDict[user.display_name] as? Bool {
+                    user.setFollowState(savedFollowState)
+                } else {
+                    user.setFollowState(false)
+                }
+                outputUserArray.append(user)
+            }
+        } else {
+            for var user in userArray {
+                user.setFollowState(false)
+                outputUserArray.append(user)
+            }
+        }
+        
+        return outputUserArray
     }
 
 }
 
 extension ViewController: UserTableViewCellDelegate {
-    func userTableViewCell(_ cell: UserTableViewCell, didTapWith viewModel: UserTableViewCellViewModel) {
+    func userTableViewCell(_ cell: UserTableViewCell,
+                           didTapWith viewModel: UserTableViewCellViewModel) {
         
-        // TODO: Save into data source [User]
+        guard let index = tableView.indexPath(for: cell) else { return }
+        var user = users[index.row]
+        user.setFollowState(viewModel.isCurrentlyFollowing)
+        users[index.row] = user
+        
+        saveFollowStates()
     }
+    
 }
