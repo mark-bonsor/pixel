@@ -37,7 +37,13 @@ class ViewController: UIViewController, UITableViewDataSource {
             do {
                 try await fetchDataFromAPI()
             } catch {
-                // Handle the errors
+                let alert = UIAlertController(title: "Connection Failure",
+                                              message: "Unable to retrieve data from StackOverflow. Please try again later.",
+                                              preferredStyle: UIAlertController.Style.alert)
+                alert.addAction(UIAlertAction(title: "OK",
+                                              style: UIAlertAction.Style.default,
+                                              handler: nil))
+                self.present(alert, animated: true, completion: nil)
             }
         }
     }
